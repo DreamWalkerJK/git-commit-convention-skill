@@ -1,5 +1,9 @@
 # git-commit-convention-skill
 
+[中文](#中文) | [English](#english)
+
+## 中文
+
 一个可分发的 Agent Skill，用于生成、审查和校验统一的 Git commit 消息。
 
 它把两个层次分开：
@@ -155,3 +159,165 @@ git push origin v0.1.1
 ## License
 
 MIT，见 [LICENSE](LICENSE)。
+
+---
+
+## English
+
+A portable, cross-platform Agent Skill for Git commit conventions, supporting Codex, Claude Code, and compatible clients. Standardizes Chinese and English messages with `<type>(<scope>): <description>` and a 72-character subject limit. Includes a validator, optional Git hooks, CI checks, and recoverable installation and upgrades.
+
+This distributable Agent Skill helps generate, review, and validate consistent Git commit messages.
+
+It separates two layers:
+
+1. `SKILL.md` guides agents through analyzing changes and generating messages that follow the convention.
+2. The validator, `commit-msg` hook, and CI reject noncompliant messages in the actual Git workflow.
+
+A Skill alone cannot make an agent that has not loaded it, or an ordinary Git client, follow the convention automatically. The project therefore provides project-level examples under `.agents/skills/` and Claude Code's `.claude/skills/`, along with an installer that copies the Skill for a selected agent and scope.
+
+### Rules
+
+The subject format is:
+
+```text
+<type>(<scope>): <description>
+```
+
+Allowed `type` values:
+
+```text
+feat fix refactor perf docs chore revert test style build ci
+```
+
+The subject must meet these requirements:
+
+- `scope` must be nonempty;
+- `description` must be nonempty;
+- Chinese, English, or a mix of both is allowed;
+- The first line must contain no more than 72 Unicode characters;
+- The colon must be followed by exactly one space;
+- Neither the scope nor the description may have leading or trailing whitespace; the scope must not contain parentheses, and the subject must not contain control characters or Unicode line separators;
+- The subject must not use `!` or any other type; the body and footer are optional, and `BREAKING CHANGE` is not required.
+
+Examples:
+
+```text
+feat(api): 添加分页查询
+fix(auth): handle token expiry
+docs(install): 补充安装说明
+ci(github): validate commit messages
+```
+
+### Project contents
+
+```text
+.agents/skills/git-commit-convention-skill/  # Generic project-level Skill
+.claude/skills/git-commit-convention-skill/  # Claude Code project-level copy
+.githooks/commit-msg                       # Optional local hook
+.github/workflows/commit-message.yml       # Optional CI validation
+scripts/install.py                        # Installer with preview and recovery
+scripts/validate_commit_range.py           # Validate a range of commits
+tests/                                    # Behavior tests
+```
+
+### Local validation
+
+The plain-text Skill does not require Python. The deterministic validator and installer require Python 3.10 or later and use only the standard library:
+
+```powershell
+python -m unittest discover -s tests -v
+python scripts/validate_commit_range.py 7f83136..HEAD
+```
+
+The range above checks commits made after this repository adopted the convention. Other projects should substitute their own `base..head`. Passing `HEAD` checks all reachable history, including a noncompliant `Initial commit` created by GitHub; that check will correctly fail. There are no exemptions for historical commits.
+
+You can check the Skill structure with `skills-ref validate` from the Agent Skills specification tooling. If that command is unavailable locally, at least check the `SKILL.md` frontmatter and directory name.
+
+### Install the Skill
+
+First, obtain the source. The repository's README, scripts, and reference files can be copied together to another machine; they do not depend on the current username or drive letter:
+
+```bash
+git clone https://github.com/DreamWalkerJK/git-commit-convention-skill.git
+cd git-commit-convention-skill
+```
+
+You can also download the standalone Skill ZIP from [GitHub Releases](https://github.com/DreamWalkerJK/git-commit-convention-skill/releases), extract it, and place the complete `git-commit-convention-skill` directory in the target agent's skills directory. The ZIP includes LICENSE and does not require the installer; manually copied directories remain under your own management.
+
+By default, these commands only preview changes and do not write any files:
+
+```powershell
+python scripts/install.py install --agent generic --scope user
+python scripts/install.py install --agent claude --scope project --project C:\path\to\project
+```
+
+Add `--apply` only after confirming the preview:
+
+```powershell
+python scripts/install.py install --agent generic --scope user --apply
+```
+
+Supported targets:
+
+| agent | user directory | project directory |
+| --- | --- | --- |
+| `generic` | `~/.agents/skills/git-commit-convention-skill` | `.agents/skills/git-commit-convention-skill` |
+| `codex` | `$CODEX_HOME/skills/git-commit-convention-skill`, or `~/.codex/skills/...` when unset | `.agents/skills/git-commit-convention-skill` |
+| `claude` | `~/.claude/skills/git-commit-convention-skill` | `.claude/skills/git-commit-convention-skill` |
+
+The installer previews changes by default. It will not overwrite an existing directory that it does not manage, and it refuses automatic changes to directories with local modifications, extra files, or an invalid management marker. Reinstalling identical content leaves files and timestamps unchanged. Updates and uninstalls place recovery backups outside the directories scanned for Skills, for example `~/.codex/.git-commit-convention-skill-backups/<uuid>/`, and print the backup path. To restore an installation, move the backup back to the original Skill location. `--force` is a compatibility option and does not bypass these checks. You can delete backups yourself after reviewing them.
+
+Status and uninstall examples:
+
+```bash
+python scripts/install.py status --agent codex --scope user
+python scripts/install.py uninstall --agent codex --scope user
+python scripts/install.py uninstall --agent codex --scope user --apply
+```
+
+Installing in the current user's directory affects only that user; installing in a project directory allows the Skill to be distributed with the repository. To make it available to every user on a machine, an administrator should deploy it according to each agent's organization-level discovery mechanism. A shared `CODEX_HOME` must not be treated as a universal directory for all agents, because it may contain user credentials and session state.
+
+For multi-user distribution, administrators can place the released Skill directory in `C:\ProgramData\AgentSkills\` on Windows or `/opt/agent-skills/` on Linux/macOS, grant ordinary users read access and administrators write access, then deploy copies into each user's client skills directory through account provisioning or device management. New users also need this provisioning step. A shared location is not automatically scanned by every agent. Agents without Skills support can be instructed through project instructions to read `SKILL.md` explicitly. Cloud agents need an in-repository Skill or an organization-level registration mechanism provided by their platform.
+
+Current Codex versions support `.agents/skills/` and Codex's own skills directory. Copies with the same name should be updated to the same version to avoid conflicting rules. You can verify a plain-text installation in the next session or after the client reloads its Skills. An explicit request could be: `Use git-commit-convention-skill to generate a Chinese commit message for the staged changes`.
+
+### Enable the local hook
+
+Enable it in a target repository containing this project's `.githooks/commit-msg` and `.agents/skills/git-commit-convention-skill/`:
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+The hook uses the same validator stored in the project. It affects only the current repository and does not modify system-level Git configuration. `--no-verify` can still bypass the local hook, so protected branches should require the CI check.
+
+If the target repository already has a configured hooksPath, integrate the validation call into its existing hook to preserve the current behavior. Git records the Unix executable bit and LF line endings. If you install the hook from a ZIP on Unix, also run `chmod +x .githooks/commit-msg`. The Skill installer only installs the Skill and does not modify hooksPath.
+
+### Distribution and compatibility
+
+The Agent Skills specification defines the `SKILL.md` format but does not prescribe a single installation directory shared by all agents. This project uses `.agents/skills/` as a convention across clients and provides explicit installation paths for Codex, Claude Code, and generic user/project scopes. Other agents require copying or linking the same Skill into their documented skills directory.
+
+The project does not claim compatibility with an agent version before it has been tested. Cloud or sandboxed agents usually need a project-level Skill, a plugin, or platform-level registration because they cannot see the local user's directories.
+
+GitHub may generate an `Initial commit` when creating a repository. This project's CI checks the range of new commits on ordinary pushes and pull requests; the first push of a new branch checks its reachable history. Automatically generated merge/revert subjects must also follow the convention. Maintainers must check the final subject of a squash merge; validating PR commits cannot guarantee a subject that is entered only when the PR is merged.
+
+Automation covers Python 3.10/3.13 on Windows, macOS, and Linux. Tests execute the hook in temporary repositories and check UTF-8, the 72/73-character boundary, CRLF, invalid types, and the installation lifecycle. Passing tests demonstrate that the scripts run in these environments; they do not prove that every agent version has been tested for Skill discovery. Codex's Skill listing has been verified to discover this project's installation and the current user's installations. The installed Claude Code files have been checked; other clients still need validation through their own Skill mechanisms.
+
+### Publish to GitHub
+
+The project does not automatically create a remote repository or store GitHub credentials. First, create an empty repository on GitHub and authenticate locally, then run:
+
+```bash
+git remote add origin https://github.com/<owner>/git-commit-convention-skill.git
+git push --set-upstream origin main
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
+```
+
+If `origin` already exists locally, update its URL first with `git remote set-url origin <url>`. Before pushing, confirm that `git status` is clean and that the remote repository's visibility meets your organization's requirements. After publishing, verify that the `Commit message convention` workflow succeeds in GitHub Actions, then configure it as a required status check for protected branches.
+
+`Publish skill release` publishes the Skill ZIP, source ZIP, and SHA-256 checksum file after the tag matches VERSION and tests pass on all three operating systems. Published tags are not moved; subsequent fixes use a new version. Locally, run `python scripts/package_release.py` in a clean, committed working tree to generate archives with the same layout. `Portable skill tests` checks the scripts and synchronized copies; the local hook provides early feedback.
+
+### License
+
+MIT; see [LICENSE](LICENSE).
