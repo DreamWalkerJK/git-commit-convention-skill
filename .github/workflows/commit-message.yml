@@ -1,0 +1,35 @@
+name: Commit message convention
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate commit messages
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "push" && "$BASE_SHA" =~ ^0+$ ]]; then
+            # On the first push there is no parent range; validate the branch
+            # tip and its reachable history instead.
+            RANGE="${HEAD_SHA}"
+          else
+            RANGE="${BASE_SHA}..${HEAD_SHA}"
+          fi
+          python scripts/validate_commit_range.py "$RANGE"

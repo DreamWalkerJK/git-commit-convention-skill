@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+validator="$repo_root/.agents/skills/git-commit-convention-skill/scripts/validate_commit_message.py"
+if command -v python3 >/dev/null 2>&1; then
+    exec python3 "$validator" "$1"
+fi
+exec python "$validator" "$1"
