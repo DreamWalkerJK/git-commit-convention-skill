@@ -1,0 +1,29 @@
+name: Portable skill tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/sync_skill.py --check
+      - name: Verify executable hook and LF checkout
+        shell: bash
+        run: |
+          test "$(git ls-files --stage .githooks/commit-msg | cut -d' ' -f1)" = 100755
+          python -c "from pathlib import Path; assert b'\r' not in Path('.githooks/commit-msg').read_bytes()"

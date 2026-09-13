@@ -19,6 +19,22 @@ Apply these rules to the subject, which is the first line of the message:
 - Use `build` for build-tool changes, `ci` for continuous-integration changes, and `chore` for other maintenance such as dependency or configuration updates.
 - A body and footer are optional. They do not replace or relax the subject rules.
 
+| Type | Meaning |
+| --- | --- |
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `refactor` | Restructuring without feature changes or bug fixes |
+| `perf` | Performance improvement |
+| `docs` | Documentation change |
+| `chore` | Maintenance, dependencies, or configuration |
+| `revert` | Revert an earlier commit |
+| `test` | Add or change tests |
+| `style` | Formatting without logic changes |
+| `build` | Build tool or build system change |
+| `ci` | Continuous integration change |
+
+Count Unicode code points (Python `len`), not bytes or terminal columns. Use exactly one ASCII space after the colon, no boundary whitespace in scope or description, and no control characters or Unicode line separators in the subject. Scope cannot contain parentheses. The validator requires Python 3.10 or newer; if no Python runtime is available, check the same rules using the agent's available tools. Skill instructions remain usable without Python.
+
 When choosing a message, inspect the change and select one primary type that best describes its intent. For `revert`, identify the reverted commit when the context is available.
 
 When the user asks only for a message, return the proposed subject (and an optional body) without staging or committing. When the user explicitly authorizes a commit, inspect the staged diff, validate the final message with `scripts/validate_commit_message.py`, and then run the requested Git command. Never stage unrelated changes automatically.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 
@@ -26,8 +27,10 @@ def validate(message: str) -> list[str]:
     if not message:
         return ["commit message is empty"]
 
-    subject = message.splitlines()[0]
+    subject = message.split("\n", 1)[0].removesuffix("\r")
     errors: list[str] = []
+    if any(unicodedata.category(char) in {"Cc", "Zl", "Zp"} for char in subject):
+        errors.append("subject must not contain control characters or line separators")
     if len(subject) > MAX_SUBJECT_LENGTH:
         errors.append(
             f"subject is {len(subject)} characters; maximum is {MAX_SUBJECT_LENGTH}"
@@ -54,9 +57,9 @@ def main() -> int:
         message = (
             Path(sys.argv[1]).read_text(encoding="utf-8")
             if len(sys.argv) == 2
-            else sys.stdin.read()
+            else sys.stdin.buffer.read().decode("utf-8")
         )
-    except OSError as exc:
+    except (OSError, UnicodeError) as exc:
         print(f"ERROR: cannot read commit message: {exc}", file=sys.stderr)
         return 2
 

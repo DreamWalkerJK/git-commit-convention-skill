@@ -15,7 +15,10 @@ from validate_commit_message import validate  # noqa: E402
 
 
 def git(*args: str) -> str:
-    result = subprocess.run(["git", *args], check=True, text=True, capture_output=True)
+    result = subprocess.run(
+        ["git", "-c", "i18n.logOutputEncoding=UTF-8", *args],
+        check=True, encoding="utf-8", capture_output=True,
+    )
     return result.stdout
 
 

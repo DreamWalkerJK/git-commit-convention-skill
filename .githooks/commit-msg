@@ -3,7 +3,10 @@ set -eu
 
 repo_root=$(git rev-parse --show-toplevel)
 validator="$repo_root/.agents/skills/git-commit-convention-skill/scripts/validate_commit_message.py"
-if command -v python3 >/dev/null 2>&1; then
-    exec python3 "$validator" "$1"
-fi
-exec python "$validator" "$1"
+for interpreter in python python3; do
+    if "$interpreter" -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
+        exec "$interpreter" "$validator" "$1"
+    fi
+done
+echo 'ERROR: Python 3.10 or newer is required for commit validation' >&2
+exit 2
