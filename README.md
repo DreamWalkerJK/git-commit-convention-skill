@@ -168,8 +168,8 @@ GitHub 创建仓库时可能产生一个平台生成的 `Initial commit`。本�
 ```bash
 git remote add origin https://github.com/<owner>/git-commit-convention-skill.git
 git push --set-upstream origin main
-git tag -a v0.1.1 -m "Release v0.1.1"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "Release v0.1.2"
+git push origin v0.1.2
 ```
 
 如果本地已经存在 `origin`，先用 `git remote set-url origin <url>` 更新地址。推送前确认 `git status` 干净，并确认远程仓库的可见性符合组织要求。发布后应在 GitHub Actions 中确认 `Commit message convention` 工作流成功，再把它设置为受保护分支的 required status check。
@@ -350,8 +350,8 @@ The project does not automatically create a remote repository or store GitHub cr
 ```bash
 git remote add origin https://github.com/<owner>/git-commit-convention-skill.git
 git push --set-upstream origin main
-git tag -a v0.1.1 -m "Release v0.1.1"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "Release v0.1.2"
+git push origin v0.1.2
 ```
 
 If `origin` already exists locally, update its URL first with `git remote set-url origin <url>`. Before pushing, confirm that `git status` is clean and that the remote repository's visibility meets your organization's requirements. After publishing, verify that the `Commit message convention` workflow succeeds in GitHub Actions, then configure it as a required status check for protected branches.

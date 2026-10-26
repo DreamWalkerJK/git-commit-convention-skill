@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.2 - 2026-10-26
 
 - Choose commit scopes from explicit repository rules, relevant history, and the actual diff; clarify that syntax validation cannot verify scope meaning.
 - Keep scope selection consistent between the canonical Skill, Claude Code copy, and Chinese/English documentation.
