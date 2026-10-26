@@ -27,7 +27,9 @@ def validate(message: str) -> list[str]:
     if not message:
         return ["commit message is empty"]
 
-    subject = message.split("\n", 1)[0].removesuffix("\r")
+    subject, separator, _ = message.partition("\n")
+    if separator:
+        subject = subject.removesuffix("\r")
     errors: list[str] = []
     if any(unicodedata.category(char) in {"Cc", "Zl", "Zp"} for char in subject):
         errors.append("subject must not contain control characters or line separators")
@@ -55,7 +57,7 @@ def main() -> int:
         return 2
     try:
         message = (
-            Path(sys.argv[1]).read_text(encoding="utf-8")
+            Path(sys.argv[1]).read_bytes().decode("utf-8")
             if len(sys.argv) == 2
             else sys.stdin.buffer.read().decode("utf-8")
         )

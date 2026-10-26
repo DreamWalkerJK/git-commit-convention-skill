@@ -17,9 +17,9 @@ from validate_commit_message import validate  # noqa: E402
 def git(*args: str) -> str:
     result = subprocess.run(
         ["git", "-c", "i18n.logOutputEncoding=UTF-8", *args],
-        check=True, encoding="utf-8", capture_output=True,
+        check=True, capture_output=True,
     )
-    return result.stdout
+    return result.stdout.decode("utf-8")
 
 
 def main() -> int:
@@ -28,18 +28,19 @@ def main() -> int:
     args = parser.parse_args()
     try:
         commits = git("rev-list", "--reverse", args.revision_range).splitlines()
-    except (OSError, subprocess.CalledProcessError) as exc:
+    except (OSError, UnicodeError, subprocess.CalledProcessError) as exc:
         print(f"ERROR: cannot enumerate {args.revision_range}: {exc}", file=sys.stderr)
         return 2
 
     invalid = 0
     for commit in commits:
         try:
-            message = git("show", "-s", "--format=%B", commit)
-        except (OSError, subprocess.CalledProcessError) as exc:
+            # format: preserves the stored ending; the default tformat:
+            # appends LF and could turn a trailing bare CR into a valid CRLF.
+            message = git("show", "-s", "--format=format:%B", commit)
+        except (OSError, UnicodeError, subprocess.CalledProcessError) as exc:
             print(f"ERROR: cannot read commit {commit}: {exc}", file=sys.stderr)
-            invalid += 1
-            continue
+            return 2
         errors = validate(message)
         if errors:
             invalid += 1

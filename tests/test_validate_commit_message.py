@@ -49,6 +49,26 @@ class ValidateCommitMessageTests(unittest.TestCase):
         self.assertEqual(MODULE.validate("fix(api): handle timeout\n\nDetails"), [])
         self.assertEqual(MODULE.validate("fix(api): handle timeout\r\n\r\nDetails"), [])
 
+    def test_lf_crlf_and_unterminated_subjects_are_valid(self) -> None:
+        subject = "fix(认证): 修复令牌过期"
+        for suffix in ("", "\n", "\r\n", "\n\nDetails", "\r\n\r\nDetails"):
+            with self.subTest(suffix=repr(suffix)):
+                self.assertEqual(MODULE.validate(subject + suffix), [])
+
+    def test_unpaired_carriage_return_is_invalid(self) -> None:
+        for subject in (
+            "fix(api): valid\r",
+            "fix(api): valid\r\r\n",
+            "fix(api): valid\rhidden",
+        ):
+            with self.subTest(subject=repr(subject)):
+                self.assertIn("control characters", " ".join(MODULE.validate(subject)))
+
+    def test_carriage_return_cannot_hide_overlong_subject(self) -> None:
+        errors = " ".join(MODULE.validate("fix(api): valid\r" + "x" * 80))
+        self.assertIn("control characters", errors)
+        self.assertIn("maximum is 72", errors)
+
     def test_empty_message(self) -> None:
         self.assertEqual(MODULE.validate(""), ["commit message is empty"])
 
