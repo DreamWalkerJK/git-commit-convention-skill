@@ -13,7 +13,7 @@ Apply these rules to the subject, which is the first line of the message:
 
 - Format: `<type>(<scope>): <description>`.
 - `type` must be exactly one of `feat`, `fix`, `refactor`, `perf`, `docs`, `chore`, `revert`, `test`, `style`, `build`, or `ci`.
-- `scope` is required, concise, non-empty, and names the affected module, subsystem, or concern. Do not invent one when the changed area is unknown; inspect the diff or ask for the missing context.
+- `scope` is required, concise, non-empty, and names the affected module, subsystem, or concern. Choose it using the repository evidence below; there is no universal list of scope values.
 - The description may be Chinese, English, or a mixture. Keep it concrete and preserve code identifiers and established project names.
 - The complete subject, including type, scope, punctuation, spaces, and Unicode characters, must be at most 72 characters and must remain one line.
 - Use `build` for build-tool changes, `ci` for continuous-integration changes, and `chore` for other maintenance such as dependency or configuration updates.
@@ -36,6 +36,15 @@ Apply these rules to the subject, which is the first line of the message:
 Count Unicode code points (Python `len`), not bytes or terminal columns. Use exactly one ASCII space after the colon, no boundary whitespace in scope or description, and no control characters or Unicode line separators in the subject. Scope cannot contain parentheses. The validator requires Python 3.10 or newer; if no Python runtime is available, check the same rules using the agent's available tools. Skill instructions remain usable without Python.
 
 When choosing a message, inspect the change and select one primary type that best describes its intent. For `revert`, identify the reverted commit when the context is available.
+
+Choose the scope from the actual changes:
+
+- Follow explicit user or repository scope rules first, including any configured scope list. Otherwise, inspect recent commits for the affected area and reuse an established name when it still describes the diff.
+- If no convention exists, use a stable module, package, subsystem, or functional concern visible in the diff. A directory or file name can supply evidence, but the repository name, branch name, current task, or a label such as `core` is not a default scope.
+- Keep type and scope independent: an authentication fix, its tests, and its documentation may use `fix(auth)`, `test(auth)`, and `docs(auth)`. A repository that explicitly uses `tests` or `docs` as scopes may keep that convention; do not derive the scope only from the type or file extension.
+- For changes across modules, use an established shared subsystem or concern that covers the change. If unrelated changes need separate commits, propose that split within the user's authorized scope. Do not invent a shared module or list unrelated names merely to fill the required scope. If the affected area is still unknown after inspection, ask for the missing context.
+
+The validator checks subject syntax and length. It cannot determine whether a scope accurately describes a diff; passing validation does not replace the scope selection above. The installer's `--scope user|project` selects an installation location and has no relation to commit scope values.
 
 When the user asks only for a message, return the proposed subject (and an optional body) without staging or committing. When the user explicitly authorizes a commit, inspect the staged diff, validate the final message with `scripts/validate_commit_message.py`, and then run the requested Git command. Never stage unrelated changes automatically.
 

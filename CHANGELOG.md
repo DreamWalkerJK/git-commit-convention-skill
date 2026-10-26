@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Choose commit scopes from explicit repository rules, relevant history, and the actual diff; clarify that syntax validation cannot verify scope meaning.
+- Keep scope selection consistent between the canonical Skill, Claude Code copy, and Chinese/English documentation.
+
 ## 0.1.1 - 2026-09-13
 
 - Restore executable hook permissions and LF checkout; choose a working Python runtime on Windows, macOS, and Linux.

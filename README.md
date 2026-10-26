@@ -46,6 +46,24 @@ docs(install): 补充安装说明
 ci(github): validate commit messages
 ```
 
+### 如何选择 scope
+
+`scope` 表示本次改动影响的模块、子系统或功能领域，没有跨项目通用的固定取值表。它应从实际 diff 中得出，并优先遵守用户或仓库的明确规则（包括已有的 scope 配置）；没有明确规则时，参考受影响区域的近期提交，沿用仍能准确描述改动的名称。若项目尚无惯例，再从真实模块、包、子系统或功能中选择稳定名称。
+
+`type` 表示改动的性质，`scope` 表示改动的范围。例如，同一认证模块的缺陷修复、测试和使用说明可以分别是 `fix(auth)`、`test(auth)`、`docs(auth)`。如果仓库明确以 `tests` 或 `docs` 作为 scope，则沿用仓库惯例；不要仅凭 type 或文件扩展名决定 scope，也不要默认使用仓库名、分支名、当前任务名或 `core`。
+
+跨模块改动应使用能够覆盖实际变更的已有上层模块或共同关注点；彼此无关的改动应考虑分开提交。不要为了填满必填字段而虚构共同模块或堆叠不相关名称。检查 diff 后仍无法判断影响范围时，再询问缺失的上下文。
+
+例如，假设项目的认证模块惯用 `auth`：
+
+| 实际改动 | 合适的标题示例 |
+| --- | --- |
+| 修复认证模块的令牌过期处理 | `fix(auth): handle token expiry` |
+| 增加认证模块的回归测试 | `test(auth): cover expired tokens` |
+| 修改认证模块的使用说明 | `docs(auth): explain token refresh` |
+
+校验器只检查标题语法与长度，不能判断 scope 是否符合代码改动。通过 hook 或 CI 不代表 scope 的语义一定正确，生成和审查消息时仍需检查 diff。
+
 ## 项目内容
 
 ```text
@@ -81,6 +99,8 @@ cd git-commit-convention-skill
 ```
 
 也可以从 [GitHub Releases](https://github.com/DreamWalkerJK/git-commit-convention-skill/releases) 获取独立 Skill ZIP，解压后把完整的 `git-commit-convention-skill` 目录放进目标 agent 的技能目录。ZIP 内带 LICENSE，不需要安装器；手工复制的目录仍由用户自行管理。
+
+安装参数 `--scope user|project` 选择安装位置，与 commit 标题中的 scope 无关。
 
 默认只预览，不写入文件：
 
@@ -208,6 +228,24 @@ docs(install): 补充安装说明
 ci(github): validate commit messages
 ```
 
+### Choosing a scope
+
+`scope` identifies the module, subsystem, or functional area affected by the change. There is no fixed list shared by all projects. Derive it from the actual diff, following explicit user or repository rules first, including any configured scope list. Otherwise, inspect recent commits for the affected area and reuse an established name when it still fits the change. If the project has no convention, choose a stable name from a real module, package, subsystem, or functional concern.
+
+`type` describes the nature of the change; `scope` describes its area. A fix, tests, and usage documentation for the same authentication module may use `fix(auth)`, `test(auth)`, and `docs(auth)`. If a repository explicitly uses `tests` or `docs` as scopes, follow that convention. Do not derive scope only from the type or file extension, or default to the repository name, branch name, current task, or `core`.
+
+For changes across modules, use an established shared subsystem or concern that covers the actual changes. Consider separate commits for unrelated changes. Do not invent a shared module or combine unrelated names merely to fill the required field. Ask for missing context only if the affected area remains unclear after inspecting the diff.
+
+For example, in a project whose authentication module uses `auth`:
+
+| Actual change | Suitable subject example |
+| --- | --- |
+| Fix token expiry handling in authentication | `fix(auth): handle token expiry` |
+| Add authentication regression tests | `test(auth): cover expired tokens` |
+| Update authentication usage documentation | `docs(auth): explain token refresh` |
+
+The validator checks subject syntax and length; it cannot determine whether a scope matches the code changes. Passing the hook or CI does not establish that a scope is semantically correct. Inspect the diff when generating or reviewing a message.
+
 ### Project contents
 
 ```text
@@ -243,6 +281,8 @@ cd git-commit-convention-skill
 ```
 
 You can also download the standalone Skill ZIP from [GitHub Releases](https://github.com/DreamWalkerJK/git-commit-convention-skill/releases), extract it, and place the complete `git-commit-convention-skill` directory in the target agent's skills directory. The ZIP includes LICENSE and does not require the installer; manually copied directories remain under your own management.
+
+The installer's `--scope user|project` selects the installation location and has no relation to commit scope values.
 
 By default, these commands only preview changes and do not write any files:
 
