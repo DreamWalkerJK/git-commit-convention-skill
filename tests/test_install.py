@@ -7,6 +7,7 @@ import io
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
@@ -93,6 +94,80 @@ class InstallTests(unittest.TestCase):
         self.assertEqual({path: path.stat().st_mtime_ns for path in timestamps}, timestamps)
         self.assertEqual(self.backups(), [])
         self.assertIn("already installed", self.output.getvalue())
+
+    def import_installed_validator(self) -> Path:
+        path = self.target / "scripts" / "validate.py"
+        spec = importlib.util.spec_from_file_location("installed_validator", path)
+        assert spec and spec.loader
+        with mock.patch.object(sys, "dont_write_bytecode", False):
+            spec.loader.exec_module(importlib.util.module_from_spec(spec))
+        cache = Path(importlib.util.cache_from_source(str(path)))
+        self.assertTrue(cache.is_file())
+        return cache
+
+    def test_imported_validator_cache_allows_installation_lifecycle(self) -> None:
+        validator = SCRIPT.parents[1] / ".agents/skills/git-commit-convention-skill/scripts/validate_commit_message.py"
+        (self.source / "scripts" / "validate.py").write_bytes(validator.read_bytes())
+        self.create_install()
+        cache = self.import_installed_validator()
+        relative_cache = cache.relative_to(self.target)
+        before = self.tree(self.target)
+        self.assertEqual(MODULE.status(self.target), 0)
+        self.assertEqual(MODULE.install(self.target, apply=True), 0)
+        self.assertEqual(self.tree(self.target), before)
+        self.assertEqual(self.backups(), [])
+
+        (self.source / "SKILL.md").write_text("new release", encoding="utf-8")
+        self.assertEqual(MODULE.install(self.target, apply=True), 0)
+        self.assertEqual(len(self.backups()), 1)
+        self.assertEqual(self.tree(self.backups()[0]), before)
+        self.assertTrue((self.backups()[0] / relative_cache).is_file())
+
+        self.import_installed_validator()
+        before_uninstall = self.tree(self.target)
+        self.assertEqual(MODULE.uninstall(self.target, apply=True), 0)
+        self.assertFalse(self.target.exists())
+        self.assertIn(before_uninstall, [self.tree(backup) for backup in self.backups()])
+
+    def test_other_runtime_and_optimized_caches_are_allowed(self) -> None:
+        self.create_install()
+        cache_directory = self.target / "scripts" / "__pycache__"
+        cache_directory.mkdir()
+        for name in ("validate.cpython-310.pyc", "validate.cpython-313.opt-1.pyc", "validate.pypy310.opt-2.pyc"):
+            (cache_directory / name).write_bytes(b"generated cache from another runtime")
+        before = self.tree(self.target)
+        self.assertEqual(MODULE.status(self.target), 0)
+        self.assertEqual(MODULE.install(self.target, apply=True), 0)
+        self.assertEqual(self.tree(self.target), before)
+
+    def test_cache_directory_does_not_hide_user_files_or_unowned_sources(self) -> None:
+        for index, extra in enumerate(("notes.txt", "unknown.cpython-314.pyc", "validate.pyc", "validate..pyc", "directory", "new-source")):
+            with self.subTest(extra=extra):
+                target = self.create_install(self.root / f"cache-extra-{index}")
+                cache_directory = target / "scripts" / "__pycache__"
+                cache_directory.mkdir()
+                (cache_directory / "validate.cpython-314.pyc").write_bytes(b"runtime cache")
+                if extra == "directory":
+                    (cache_directory / "user-directory").mkdir()
+                elif extra == "new-source":
+                    (target / "scripts" / "personal.py").write_text("pass\n", encoding="utf-8")
+                    (cache_directory / "personal.cpython-314.pyc").write_bytes(b"unowned cache")
+                else:
+                    (cache_directory / extra).write_bytes(b"user content")
+                before = self.tree(target)
+                self.assertEqual(MODULE.install(target, apply=True, force=True), 1)
+                self.assertEqual(MODULE.uninstall(target, apply=True), 1)
+                self.assertEqual(MODULE.status(target), 1)
+                self.assertEqual(self.tree(target), before)
+
+    def test_runtime_cache_allows_legacy_migration(self) -> None:
+        self.create_install()
+        self.write_legacy_marker(self.target)
+        self.import_installed_validator()
+        before = self.tree(self.target)
+        self.assertEqual(MODULE.install(self.target, apply=True), 0)
+        self.assertEqual(self.tree(self.backups()[0]), before)
+        self.assertEqual(json.loads(MODULE.marker_path(self.target).read_text())["format"], 2)
 
     def test_uninstall_preview_then_recoverable_removal(self) -> None:
         self.create_install()

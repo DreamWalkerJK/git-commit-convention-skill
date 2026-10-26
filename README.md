@@ -123,7 +123,7 @@ python scripts/install.py install --agent generic --scope user --apply
 | `codex` | `$CODEX_HOME/skills/git-commit-convention-skill`，未设置时 `~/.codex/skills/...` | `.agents/skills/git-commit-convention-skill` |
 | `claude` | `~/.claude/skills/git-commit-convention-skill` | `.claude/skills/git-commit-convention-skill` |
 
-安装器默认只预览。已有非本工具管理的目录不会被覆盖；有本地修改、额外文件或无效标记的目录也会拒绝自动变更。完全相同的重复安装保持文件和时间戳不变。更新和卸载会把恢复备份放到技能扫描目录之外，例如 `~/.codex/.git-commit-convention-skill-backups/<uuid>/`，并输出路径；需要恢复时，可把备份移回原技能位置。`--force` 是兼容参数，不绕过上述检查。备份由用户检查后自行删除。
+安装器默认只预览。已有非本工具管理的目录不会被覆盖；有本地修改、额外用户文件或无效标记的目录也会拒绝自动变更。受管理 Python 源文件对应的 `__pycache__/*.pyc` 视为运行缓存，不会阻止升级或卸载；缓存目录中的自定义文件和无法对应受管理源码的文件仍受保护。完全相同的重复安装保持文件和时间戳不变。更新和卸载会把旧目录（包括运行缓存）的恢复备份放到技能扫描目录之外，例如 `~/.codex/.git-commit-convention-skill-backups/<uuid>/`，并输出路径；需要恢复时，可把备份移回原技能位置。`--force` 是兼容参数，不绕过上述检查。备份由用户检查后自行删除。
 
 检查与卸载示例：
 
@@ -305,7 +305,7 @@ Supported targets:
 | `codex` | `$CODEX_HOME/skills/git-commit-convention-skill`, or `~/.codex/skills/...` when unset | `.agents/skills/git-commit-convention-skill` |
 | `claude` | `~/.claude/skills/git-commit-convention-skill` | `.claude/skills/git-commit-convention-skill` |
 
-The installer previews changes by default. It will not overwrite an existing directory that it does not manage, and it refuses automatic changes to directories with local modifications, extra files, or an invalid management marker. Reinstalling identical content leaves files and timestamps unchanged. Updates and uninstalls place recovery backups outside the directories scanned for Skills, for example `~/.codex/.git-commit-convention-skill-backups/<uuid>/`, and print the backup path. To restore an installation, move the backup back to the original Skill location. `--force` is a compatibility option and does not bypass these checks. You can delete backups yourself after reviewing them.
+The installer previews changes by default. It will not overwrite an existing directory that it does not manage, and it refuses automatic changes to directories with local modifications, extra user files, or an invalid management marker. Files under `__pycache__/*.pyc` that correspond to managed Python sources are runtime caches and do not block upgrades or uninstalls. Custom files in cache directories and files without a corresponding managed source remain protected. Reinstalling identical content leaves files and timestamps unchanged. Updates and uninstalls place recovery backups of the entire old directory, including runtime caches, outside the directories scanned for Skills, for example `~/.codex/.git-commit-convention-skill-backups/<uuid>/`, and print the backup path. To restore an installation, move the backup back to the original Skill location. `--force` is a compatibility option and does not bypass these checks. You can delete backups yourself after reviewing them.
 
 Status and uninstall examples:
 

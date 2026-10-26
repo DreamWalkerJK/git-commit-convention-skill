@@ -6,6 +6,7 @@
 - Keep scope selection consistent between the canonical Skill, Claude Code copy, and Chinese/English documentation.
 - Preserve raw line endings in message files and Git history so a bare carriage return cannot hide an invalid or overlong subject; report unreadable history as an operational error.
 - Reject a missing canonical Skill during synchronization; stage replacements and restore or retain the previous copy when synchronization fails.
+- Allow managed installations to be checked, upgraded, or uninstalled after Python creates caches for managed source files; continue protecting user additions and preserve caches in recovery backups.
 
 ## 0.1.1 - 2026-09-13
 
