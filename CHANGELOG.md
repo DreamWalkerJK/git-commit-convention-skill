@@ -5,6 +5,7 @@
 - Choose commit scopes from explicit repository rules, relevant history, and the actual diff; clarify that syntax validation cannot verify scope meaning.
 - Keep scope selection consistent between the canonical Skill, Claude Code copy, and Chinese/English documentation.
 - Preserve raw line endings in message files and Git history so a bare carriage return cannot hide an invalid or overlong subject; report unreadable history as an operational error.
+- Reject a missing canonical Skill during synchronization; stage replacements and restore or retain the previous copy when synchronization fails.
 
 ## 0.1.1 - 2026-09-13
 
