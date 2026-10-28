@@ -48,11 +48,13 @@ ci(github): validate commit messages
 
 ### 如何选择 scope
 
-`scope` 表示本次改动影响的模块、子系统或功能领域，没有跨项目通用的固定取值表。它应从实际 diff 中得出，并优先遵守用户或仓库的明确规则（包括已有的 scope 配置）；没有明确规则时，参考受影响区域的近期提交，沿用仍能准确描述改动的名称。若项目尚无惯例，再从真实模块、包、子系统或功能中选择稳定名称。
+`scope` 表示本次改动影响的模块、子系统或功能领域，没有跨项目通用的固定取值表。先遵守用户或仓库的明确规则，包括已有的 scope 配置以及用户对当前任务的纠正。再根据 diff 确认行为所属的模块、包或服务，参考该区域的提交历史，沿用仍能准确描述改动的 scope。其他区域的近期提交、依赖库、内部类名或接口名称不能代替所属模块的命名依据。
+
+没有既定 scope 时，优先保留真实所属模块的名称，按仓库惯例处理大小写或前缀。例如，模块名为 `Auth` 时可使用 `auth`，不要仅为表达更完整而扩写成 `authentication`；如果仓库已经约定使用 `authentication`，则应沿用该约定。不要无依据地替换近义词、翻译名称或改变词形。用户在某个任务中的纠正也不应变成所有仓库的固定别名。
 
 `type` 表示改动的性质，`scope` 表示改动的范围。例如，同一认证模块的缺陷修复、测试和使用说明可以分别是 `fix(auth)`、`test(auth)`、`docs(auth)`。如果仓库明确以 `tests` 或 `docs` 作为 scope，则沿用仓库惯例；不要仅凭 type 或文件扩展名决定 scope，也不要默认使用仓库名、分支名、当前任务名或 `core`。
 
-跨模块改动应使用能够覆盖实际变更的已有上层模块或共同关注点；彼此无关的改动应考虑分开提交。不要为了填满必填字段而虚构共同模块或堆叠不相关名称。检查 diff 后仍无法判断影响范围时，再询问缺失的上下文。
+同一模块功能的测试、文档、契约和注册代码即使位于其他目录，也可以保留所属模块的 scope。行为确实跨多个模块，或没有具体所属模块时，再选择能够覆盖实际变更的已有上层模块或共同关注点；彼此无关的改动应考虑分开提交。不要为了填满必填字段而虚构共同模块或堆叠不相关名称。检查 diff 后仍无法判断影响范围时，再询问缺失的上下文。
 
 例如，假设项目的认证模块惯用 `auth`：
 
@@ -61,6 +63,7 @@ ci(github): validate commit messages
 | 修复认证模块的令牌过期处理 | `fix(auth): handle token expiry` |
 | 增加认证模块的回归测试 | `test(auth): cover expired tokens` |
 | 修改认证模块的使用说明 | `docs(auth): explain token refresh` |
+| 为认证功能同时修改模块源码、共享契约和集成测试 | `feat(auth): add token refresh` |
 
 校验器只检查标题语法与长度，不能判断 scope 是否符合代码改动。通过 hook 或 CI 不代表 scope 的语义一定正确，生成和审查消息时仍需检查 diff。
 
@@ -230,11 +233,13 @@ ci(github): validate commit messages
 
 ### Choosing a scope
 
-`scope` identifies the module, subsystem, or functional area affected by the change. There is no fixed list shared by all projects. Derive it from the actual diff, following explicit user or repository rules first, including any configured scope list. Otherwise, inspect recent commits for the affected area and reuse an established name when it still fits the change. If the project has no convention, choose a stable name from a real module, package, subsystem, or functional concern.
+`scope` identifies the module, subsystem, or functional area affected by the change. There is no fixed list shared by all projects. Follow explicit user or repository rules first, including configured scope lists and the user's corrections for the current task. Then identify the module, package, or service that owns the changed behavior from the diff, inspect its relevant history, and reuse an established scope when it still fits. Unrelated recent commits, dependencies, internal class names, or endpoint names do not establish the owner's scope.
+
+When there is no established scope, prefer the actual owning module's name, applying repository casing or prefix conventions. For a module named `Auth`, use `auth` without expanding it to `authentication` merely to sound more descriptive; keep `authentication` if that is the repository's established scope. Do not substitute synonyms, translate names, or change word forms without evidence. A user's correction in one task does not create a fixed alias for every repository.
 
 `type` describes the nature of the change; `scope` describes its area. A fix, tests, and usage documentation for the same authentication module may use `fix(auth)`, `test(auth)`, and `docs(auth)`. If a repository explicitly uses `tests` or `docs` as scopes, follow that convention. Do not derive scope only from the type or file extension, or default to the repository name, branch name, current task, or `core`.
 
-For changes across modules, use an established shared subsystem or concern that covers the actual changes. Consider separate commits for unrelated changes. Do not invent a shared module or combine unrelated names merely to fill the required field. Ask for missing context only if the affected area remains unclear after inspecting the diff.
+Supporting tests, documentation, contracts, and registration code for one module's feature can keep that module's scope even when they live elsewhere. Use an established shared subsystem or concern when the behavior genuinely spans modules or no concrete owner applies. Consider separate commits for unrelated changes. Do not invent a shared module or combine unrelated names merely to fill the required field. Ask for missing context only if the affected area remains unclear after inspecting the diff.
 
 For example, in a project whose authentication module uses `auth`:
 
@@ -243,6 +248,7 @@ For example, in a project whose authentication module uses `auth`:
 | Fix token expiry handling in authentication | `fix(auth): handle token expiry` |
 | Add authentication regression tests | `test(auth): cover expired tokens` |
 | Update authentication usage documentation | `docs(auth): explain token refresh` |
+| Change module source, shared contracts, and integration tests for one authentication feature | `feat(auth): add token refresh` |
 
 The validator checks subject syntax and length; it cannot determine whether a scope matches the code changes. Passing the hook or CI does not establish that a scope is semantically correct. Inspect the diff when generating or reviewing a message.
 

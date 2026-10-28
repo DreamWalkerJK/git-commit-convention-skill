@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Preserve the owning module's name when choosing a commit scope instead of inventing synonyms or expanding abbreviations; respect explicit rules, task-specific user corrections, and relevant scope history.
+- Keep a module's scope for supporting changes outside its source directory, and distinguish those changes from behavior shared across modules.
+
 ## 0.1.2 - 2026-10-26
 
 - Choose commit scopes from explicit repository rules, relevant history, and the actual diff; clarify that syntax validation cannot verify scope meaning.
