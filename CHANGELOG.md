@@ -4,6 +4,7 @@
 
 - Preserve the owning module's name when choosing a commit scope instead of inventing synonyms or expanding abbreviations; respect explicit rules, task-specific user corrections, and relevant scope history.
 - Keep a module's scope for supporting changes outside its source directory, and distinguish those changes from behavior shared across modules.
+- Add generic semantic evaluation cases for module ownership, explicit scope rules, relevant history, user corrections, and cross-module changes.
 
 ## 0.1.2 - 2026-10-26
 

@@ -67,6 +67,8 @@ ci(github): validate commit messages
 
 校验器只检查标题语法与长度，不能判断 scope 是否符合代码改动。通过 hook 或 CI 不代表 scope 的语义一定正确，生成和审查消息时仍需检查 diff。
 
+[scope 评估案例](tests/scope_cases.json) 提供通用的请求、仓库证据和预期选择，覆盖模块名保留、明确配置、相关历史、用户纠正和跨模块边界。评估 Skill 行为时，向独立 agent 提供 Skill 和每个案例的 `request`、`evidence`，隐藏 `expected`，再比较输出中的 scope、拆分建议或上下文请求。这是语义评估材料，不由下述 `unittest` 自动执行。
+
 ## 项目内容
 
 ```text
@@ -251,6 +253,8 @@ For example, in a project whose authentication module uses `auth`:
 | Change module source, shared contracts, and integration tests for one authentication feature | `feat(auth): add token refresh` |
 
 The validator checks subject syntax and length; it cannot determine whether a scope matches the code changes. Passing the hook or CI does not establish that a scope is semantically correct. Inspect the diff when generating or reviewing a message.
+
+The [scope evaluation cases](tests/scope_cases.json) provide generic requests, repository evidence, and expected decisions covering module names, explicit configuration, relevant history, user corrections, and module boundaries. To evaluate Skill behavior, give an independent agent the Skill and each case's `request` and `evidence`, withholding `expected`, then compare the resulting scope, split recommendation, or request for context. These are semantic evaluation materials, not tests run automatically by `unittest` below.
 
 ### Project contents
 

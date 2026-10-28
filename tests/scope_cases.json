@@ -1,0 +1,181 @@
+[
+  {
+    "id": "owner-before-word-form",
+    "request": "Write an English commit subject for a feature adding delivery retries.",
+    "evidence": {
+      "files": [
+        "src/Services/Mail/MailService.API/MailingController.cs",
+        "src/Services/Mail/MailService.Domain/RetryPolicy.cs"
+      ],
+      "ownership": "The service registry and architecture name the owning service Mail. MailingController is an internal API class.",
+      "history": []
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "mail"
+    }
+  },
+  {
+    "id": "explicit-scope-list",
+    "request": "Write an English subject for the Mail service retry feature.",
+    "evidence": {
+      "files": [
+        "services/Mail/RetryPolicy.cs"
+      ],
+      "scope_rules": "The repository requires scopes from [mailing, accounts, build]. Mail service changes use mailing.",
+      "history": []
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "mailing"
+    }
+  },
+  {
+    "id": "established-expanded-scope",
+    "request": "Write an English subject for fixing token refresh.",
+    "evidence": {
+      "files": [
+        "src/Auth/TokenRefresh.cs"
+      ],
+      "history": [
+        "fix(authentication): handle expired tokens",
+        "feat(authentication): add refresh tokens"
+      ],
+      "ownership": "These commits changed the same Auth module."
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "authentication"
+    }
+  },
+  {
+    "id": "ignore-unrelated-history",
+    "request": "Write an English subject for fixing configuration parsing.",
+    "evidence": {
+      "files": [
+        "packages/Config/Reader.cs"
+      ],
+      "ownership": "Config is the package name; ConfigurationReader is an internal class.",
+      "history": [
+        "feat(core): add a dashboard",
+        "fix(core): align dashboard filters"
+      ],
+      "history_context": "Both historical changes affect unrelated packages. No scope convention exists for Config."
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "config"
+    }
+  },
+  {
+    "id": "supporting-files",
+    "request": "Write one English subject for adding token refresh.",
+    "evidence": {
+      "files": [
+        "src/Auth/RefreshHandler.cs",
+        "tests/Integration/RefreshTests.cs",
+        "docs/security/token-refresh.md",
+        "shared/Contracts/RefreshRequest.cs",
+        "src/Host/Registration.cs"
+      ],
+      "ownership": "All files implement, register, document, or test the Auth module feature; no independent behavior changes.",
+      "history": [
+        "fix(auth): handle token expiry"
+      ]
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "auth"
+    }
+  },
+  {
+    "id": "independent-changes",
+    "request": "Recommend commit subjects for the staged changes.",
+    "evidence": {
+      "files": [
+        "src/Auth/TokenExpiry.cs",
+        "src/Catalog/PriceFormatter.cs"
+      ],
+      "changes": [
+        "Fix expired token acceptance in Auth.",
+        "Fix currency rounding in Catalog."
+      ],
+      "history": [
+        "fix(auth): handle token refresh",
+        "fix(catalog): format prices"
+      ],
+      "ownership": "The fixes are independent. No common subsystem or scope is defined."
+    },
+    "expected": {
+      "action": "split",
+      "scopes": [
+        "auth",
+        "catalog"
+      ]
+    }
+  },
+  {
+    "id": "missing-evidence",
+    "request": "Write a commit subject for my fix.",
+    "evidence": {
+      "diff": "Not supplied and not accessible.",
+      "repository": "No file list, module names, scope rules, or history are available."
+    },
+    "expected": {
+      "action": "needs-context"
+    }
+  },
+  {
+    "id": "task-correction",
+    "request": "Write an English subject for the remaining metric export fix.",
+    "evidence": {
+      "files": [
+        "src/Stats/Exporter.cs"
+      ],
+      "ownership": "Stats is the module; StatisticsExporter is an internal class.",
+      "user_context": "Earlier in this task the user corrected the proposed scope statistics to stats for this module.",
+      "history": []
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "stats"
+    }
+  },
+  {
+    "id": "logging-owner",
+    "request": "Write an English subject for fixing sink disposal.",
+    "evidence": {
+      "files": [
+        "packages/Logging/SinkLifetime.cs"
+      ],
+      "ownership": "The package and module are named Logging.",
+      "history": [
+        "fix(logging): release sinks",
+        "feat(logging): add file sinks"
+      ]
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "logging"
+    }
+  },
+  {
+    "id": "shared-concern",
+    "request": "Write one English subject for adding consistent trace propagation.",
+    "evidence": {
+      "files": [
+        "services/Mail/Tracing.cs",
+        "services/Search/Tracing.cs",
+        "shared/Tracing/Propagation.cs"
+      ],
+      "ownership": "Both services adopt one shared propagation contract. Architecture defines observability as the common subsystem; neither service owns the overall change.",
+      "history": [
+        "feat(observability): add cross-service metrics"
+      ]
+    },
+    "expected": {
+      "action": "subject",
+      "scope": "observability"
+    }
+  }
+]
